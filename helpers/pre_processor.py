@@ -7,9 +7,14 @@ import textract, re
 
 class Preprocessor:
 	"""
+	Preprocessor class provides method required for indexing the corpus
+	TF-IDF model used for retrieval
 	"""
 	
 	def __init__(self):
+		"""
+		initialize several variables to use them throughout the program and for object instances
+		"""
 		self.keywords = list()
 		self.TFVectors = []
 		self.fileNames = []
@@ -21,8 +26,11 @@ class Preprocessor:
 
 	def extract_text(self, file):
 		"""
-		extract text from a file 
+		extract text from a file
 		file can be of different formats : .pptx, .pdf, .docx
+		:param file: expects file path as param to be processed by textract
+					 textract extracts text from various file formats
+		:return: text extracted from file in lower case
 		"""
 		try:
 			txt = textract.process("/home/enigmaeth/DC++/3-1/Information Retrieval/"+str(file)) # returns byte text
@@ -38,7 +46,9 @@ class Preprocessor:
 
 	def tokenize(self, file_content):
 		"""
-		Tokenize the content of the word 
+		Tokenize the content of the word
+		:param file_content: the text content of a file
+		:return: list of tokens obtained by using nltk.word_tokenize()
 		"""
 		tokens = word_tokenize(file_content)
 		tokens = [i for i in tokens if i not in string.punctuation]
@@ -48,6 +58,9 @@ class Preprocessor:
 
 	def stem(self, tokens):
 		"""
+		Stemming of the tokens
+		:param tokens: list of tokens to be stemmed down
+		:return: list of stemmed tokens
 		"""
 		stemmed = []
 		stemmer = PorterStemmer()
@@ -58,6 +71,9 @@ class Preprocessor:
 
 	def generate_ngrams(self, tokens):
 		"""
+		Generate uni, bi and tri-grams from the stemmed down tokens of file text
+		:param tokens: list of stemmed down tokens
+		:return: list containing three separate lists - one each for unigram, bigram and trigram
 		"""
 		unigram = [' '.join(gram) for gram in ngrams(tokens,1)] 
 		bigram = [' '.join(gram) for gram in ngrams(tokens, 2)]
@@ -67,8 +83,11 @@ class Preprocessor:
 
 	def dumpKeywords(self, keywords, path):
 		"""
-		Method to dump all the keywords in a file named 'keywords.txt'.
+		Method to dump all the keywords in a file represented by path
 		In this, tokens are separed by '_' so that they can recovered later easily.
+		:param keywords: List of keywords to be dumped to external storage for cleaning up space on RAM
+		:param path: path where the dump file is intended to be created
+		:return: None
 		"""
 		targetFile = open(path,"w")
 		targetFile.write('_'.join(self.keywords))
@@ -76,6 +95,13 @@ class Preprocessor:
 
 	def get_tf_idf(self, file, fileNum):
 		"""
+		Method to get tf-idf for each keyword
+		:Saves term frequency of all words in each file as list of dicts 'TFVectors'
+		:Saves occurrences of keywords in files in dict 'appearances'
+		:Saves inverse document frequency of each keyword in form of dict 'IDFVector'
+		:param file: file path from where keywords are to extracted
+		:param fileNum: total number of files in the corpus
+
 		"""
 		txt = self.extract_text(file)
 		tokens = self.tokenize(txt)
@@ -106,6 +132,12 @@ class Preprocessor:
 
 	def vectorize(self, numFiles):
 		"""
+		Vectorization of each file
+		The keywords are indexed in the following format:
+			{ key_word1 : { <doc1> : <tf-idf value based on model> , <doc2> : ... } , key_word2 : { ... } ... }
+		:Saves the values for each keyword in entire corpus in the above format in dict of dicts TF_IDF_Vector
+		:param numFiles: total number of files in corpus
+		:return:
 		"""
 		all_keywords = list(set(self.keywords))
 		for keyword in all_keywords:
@@ -114,17 +146,3 @@ class Preprocessor:
 				tf_idf = self.TFVectors[fileNum][str(keyword)]*(1.0+math.log10(numFiles/self.IDFVector[keyword]))
 				vector[fileNum] = tf_idf
 			self.TF_IDF_Vector[keyword] = vector
-		# print(self.TF_IDF_Vector)	
-
-	# def remove_stop_words(self, word_tokens):
-	# 	"""
-	# 	"""
-	# 	stop_words_to_remove = set(stopwords.words('english'))
-	# 	stop_words_to_skip = set(('and', 'or', 'not'))
-	# 	stop_words = set(stop_words_to_remove - stop_words_to_skip)
-
-	# 	filtered_sentence = []
-	# 	for w in word_tokens:
-	# 		if w not in stop_words:
-	# 			filtered_sentence.append(w)
-	# 	return filtered_sentence
