@@ -23,6 +23,7 @@ class Preprocessor:
 		self.stopwords = [str(word) for word in stopwords.words("english")]
 		self.appearances = {}
 		self.TF_IDF_Vector = {}
+		self.docLength = {}
 
 	def extract_text(self, file):
 		"""
@@ -33,23 +34,31 @@ class Preprocessor:
 		:return: text extracted from file in lower case
 		"""
 		try:
-			txt = textract.process("/home/enigmaeth/DC++/3-1/Information Retrieval/"+str(file)) # returns byte text
-		except:
-			txt = b""
-		txt = txt.decode() # converts bytes to string
+			txt = textract.process(str(file)) # returns byte text
+			txt = txt.decode('utf-8') # converts bytes to string
 						   # printing here leads to non-printable characters also being displayed
-		txt = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]', '',txt)	# removes escape characters using regex
-		txt = txt.encode('ascii','ignore') # removes unicode characters like \u0097 and type(txt) is bytes
-		txt = txt.decode('unicode_escape') # conversion to desired string 
-		return txt.lower()
+			txt = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]', '',txt)	# removes escape characters using regex
+			txt = txt.encode('ascii','ignore') # removes unicode characters like \u0097 and type(txt) is bytes
+			txt = txt.split()
+			newTxt = []
+			for text in txt:
+				try:
+					newTxt.append(text.decode('unicode_escape')) # conversion to desired string 
+				except:
+					pass
+			txt = ' '.join(newTxt)	
+		except:
+			txt = ""
+		return txt
 
 
-	def tokenize(self, file_content):
+	def tokenize(self, file_content, file=None):
 		"""
 		Tokenize the content of the word
 		:param file_content: the text content of a file
 		:return: list of tokens obtained by using nltk.word_tokenize()
 		"""
+		# print(file)
 		tokens = word_tokenize(file_content)
 		tokens = [i for i in tokens if i not in string.punctuation]
 		tokens = [word for word in tokens if len(word) > 1]
@@ -103,32 +112,36 @@ class Preprocessor:
 		:param fileNum: total number of files in the corpus
 
 		"""
-		txt = self.extract_text(file)
-		tokens = self.tokenize(txt)
-		ngrams = self.generate_ngrams(tokens)
-		ngrams[0] = self.stem(ngrams[0])
-		file_keywords = ngrams[0] + ngrams[1] + ngrams[2]
-		file_keywords = [word for word in file_keywords if word not in self.stopwords]
-		vector = {}
-		for token in file_keywords:
-			token = str(token)
-			if token not in vector:
-				vector[token] = 1
-			else:
-				vector[token] += 1
-		self.keywords += file_keywords
-		self.TFVectors.append(vector)
-		self.fileNames.append(file)
-		file_keywords = list(set(file_keywords))
-		for keyword in file_keywords:
-			if keyword in self.IDFVector:
-				self.IDFVector[keyword] += 1
-			else:
-				self.IDFVector[keyword] = 1
-			if keyword in self.appearances:
-				self.appearances[keyword].append(fileNum)
-			else:
-				self.appearances[keyword] = [fileNum]
+		try:
+			txt = self.extract_text(file)
+			tokens = self.tokenize(txt, file)
+			ngrams = self.generate_ngrams(tokens)
+			ngrams[0] = self.stem(ngrams[0])
+			file_keywords = ngrams[0] + ngrams[1] + ngrams[2]
+			file_keywords = [word for word in file_keywords if word not in self.stopwords]
+			self.docLength[fileNum] = len(file_keywords)
+			vector = {}
+			for token in file_keywords:
+				token = str(token)
+				if token not in vector:
+					vector[token] = 1
+				else:
+					vector[token] += 1
+			self.keywords += file_keywords
+			self.TFVectors.append(vector)
+			self.fileNames.append(file)
+			file_keywords = list(set(file_keywords))
+			for keyword in file_keywords:
+				if keyword in self.IDFVector:
+					self.IDFVector[keyword] += 1
+				else:
+					self.IDFVector[keyword] = 1
+				if keyword in self.appearances:
+					self.appearances[keyword].append(fileNum)
+				else:
+					self.appearances[keyword] = [fileNum]
+		except:
+			print("Could not process... ", file)
 
 	def vectorize(self, numFiles):
 		"""
@@ -143,6 +156,9 @@ class Preprocessor:
 		for keyword in all_keywords:
 			vector = {}
 			for fileNum in self.appearances[keyword]:
-				tf_idf = self.TFVectors[fileNum][str(keyword)]*(1.0+math.log10(numFiles/self.IDFVector[keyword]))
-				vector[fileNum] = tf_idf
+				try:
+					tf_idf = self.TFVectors[fileNum][str(keyword)]*(1.0+math.log10(numFiles/self.IDFVector[keyword]))
+					vector[fileNum] = tf_idf
+				except:
+					pass
 			self.TF_IDF_Vector[keyword] = vector

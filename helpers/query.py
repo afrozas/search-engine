@@ -9,7 +9,6 @@ class Query:
 		"""
 		initialize several variables to use them throughout the program and for object instances
 		"""
-		self.input = input("Enter Query: ")
 		self.preprocessor = Preprocessor()
 		self.keywords = ""
 		self.results = []
@@ -20,6 +19,7 @@ class Query:
 		tokenizes, stems unigrams, generate list of keywords including bigrams and trigrams
 		saves the above generated keywords to self.keywords
 		"""
+		self.input = input("Enter Query: ")
 		tokens = self.preprocessor.tokenize(self.input)
 		ngrams = self.preprocessor.generate_ngrams(tokens)
 		ngrams[0] = self.preprocessor.stem(ngrams[0])
@@ -40,5 +40,5 @@ class Query:
 			for keyword in self.keywords:
 				if keyword in self.preprocessor.TF_IDF_Vector and fileNum in self.preprocessor.TF_IDF_Vector[keyword]:
 					score += self.preprocessor.TF_IDF_Vector[keyword][fileNum]
-			self.results.append((score,fileNum))
+			self.results.append((score,fileNum)) #/self.preprocessor.docLength[fileNum]
 		self.results.sort()
