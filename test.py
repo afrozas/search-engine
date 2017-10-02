@@ -8,9 +8,15 @@ def get_files(path=None):
 	set `path` variable to the desired path
 	:return:
 	"""
-	path = '/home/enigmaeth/DC++/3-1/Information Retrieval'
-	files = os.listdir(path)
-	return files
+	root = '/home/enigmaeth/31'
+	files_list = []
+	accepted_formats = ['pdf', 'pptx', 'doc', 'docx' ]
+	for path, subdirs, files in os.walk(root):
+	    for name in files:
+	    	print(os.path.join(path, name))
+	    	if(name.split('.')[-1] in accepted_formats):
+	    		files_list.append(name)
+	return files_list
 
 def pre_process():
 	"""
