@@ -1,10 +1,12 @@
 from helpers.pre_processor import Preprocessor
 from nltk.corpus import stopwords
 
+
 class Query:
 	"""
 	Query class provides method required for preprocessing the query and calculating the results
 	"""
+
 	def __init__(self):
 		"""
 		initialize several variables to use them throughout the program and for object instances
@@ -13,19 +15,22 @@ class Query:
 		self.keywords = ""
 		self.results = []
 
+
 	def query_preprocess(self):
 		"""
 		method to preprocess the query
 		tokenizes, stems unigrams, generate list of keywords including bigrams and trigrams
 		saves the above generated keywords to self.keywords
 		"""
-		self.input = input("Enter Query: ")
+		self.input = input("Enter query: ")
+		print(self.input)
 		tokens = self.preprocessor.tokenize(self.input)
 		ngrams = self.preprocessor.generate_ngrams(tokens)
 		ngrams[0] = self.preprocessor.stem(ngrams[0])
 		self.keywords = ngrams[0] + ngrams[1] + ngrams[2]
 		self.keywords = [word for word in self.keywords if word not in self.preprocessor.stopwords]
-					
+			
+
 	def display_results(self, numFiles):
 		"""
 		method to calculate the similarity for documents and return results

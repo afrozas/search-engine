@@ -25,6 +25,7 @@ class Preprocessor:
 		self.TF_IDF_Vector = {}
 		self.docLength = {}
 
+
 	def extract_text(self, file):
 		"""
 		extract text from a file
@@ -142,6 +143,7 @@ class Preprocessor:
 					self.appearances[keyword] = [fileNum]
 		except:
 			print("Could not process... ", file)
+
 
 	def vectorize(self, numFiles):
 		"""
