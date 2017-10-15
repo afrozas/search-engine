@@ -14,11 +14,10 @@ class FormatConverter:
 		fm = FileManager()
 		files_list = fm.get_all_files()
 		for file in files_list:
-			if(file.split('.')[-1] == '.ppt'):
-				command = "unoconv -f pdf " + str(file)
-				print(command)
+			if file.split('.')[-1] == 'ppt':
+				command = "unoconv -f pdf " +  str(file.replace(" ", "\ "))
 				try:
 					subprocess.call(command, shell=True)
-					print("completed file ", str(file))
+					print("converted :: ", str(file))
 				except:
 					print("Error while converting ", str(file), " to PDF")
