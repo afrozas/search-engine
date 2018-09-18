@@ -2,7 +2,7 @@
 
 Search engine built from scratch for searching resources( Powerpoint presentations, PDFs, Word documents, etc) for different courses on BITS Course Management System.
 
-This repo uses python3.5 as textract library is not available for python2.7 .
+> This repo uses python3.5 as textract library is not available for python2.7 .
 Install all the other dependencies using pip3.
 
 ### Installation:
